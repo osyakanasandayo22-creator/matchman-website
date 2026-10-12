@@ -1,0 +1,12 @@
+{
+  "name": "matchman-website",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node dev-server.mjs"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.0.0",
+    "google-auth-library": "^10.9.1"
+  }
+}
