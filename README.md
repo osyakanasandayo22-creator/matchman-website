@@ -48,6 +48,8 @@ npm run dev
 
 `http://127.0.0.1:3000` で表示します。環境変数を設定しなくてもデザインを確認できます。アカウントの実動作には以下の設定が必要です。
 
+公開環境で`SESSION_SECRET`と`DATABASE_URL`が両方揃うまでは、新規登録・ログインを画面とAPIの両方で停止します。設定途中にUnity側だけアカウントが作られる状態を避けるためです。
+
 ## 実サービスの設定と公開手順
 
 1. Unity Dashboard で、このゲームと**同じ** Unity Project ID と Environment を確認します。現プロジェクトIDは `.env.example` に記載されています。

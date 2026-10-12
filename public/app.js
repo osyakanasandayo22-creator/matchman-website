@@ -90,7 +90,13 @@ async function handleGoogleCredential(response) {
 
 async function configureGoogle() {
   try {
-    const { googleClientId } = await api('config');
+    const { googleClientId, accountReady } = await api('config');
+    if (!accountReady) {
+      for (const id of ['username', 'password', 'auth-submit', 'tab-login', 'tab-signup']) $(id).disabled = true;
+      $('auth-intro').textContent = 'アカウント機能は公開設定の準備中です。';
+      $('google-login-note').textContent = 'アカウント機能は公開設定の準備中です。';
+      return;
+    }
     if (!googleClientId) {
       $('google-login-note').textContent = 'Googleログインは公開設定の準備中です。現在はログインIDをご利用ください。';
       return;

@@ -2,11 +2,14 @@ import { body, fail, json, method, sameOrigin, HttpError } from '../lib/http.js'
 import { verifyGoogleCredential } from '../lib/google.js';
 import { session, setSession, verifyCsrf } from '../lib/session.js';
 import { linkGoogle, signInGoogle } from '../lib/unity.js';
+import { accountReady } from '../lib/config.js';
 
 export default async function handler(req, res) {
   try {
     method(req, 'POST');
     sameOrigin(req);
+    if (!accountReady())
+      throw new HttpError(503, 'site_not_configured', 'アカウント機能の公開設定がまだ完了していません。');
     const { mode, credential } = body(req);
     if (mode !== 'signin' && mode !== 'link')
       throw new HttpError(400, 'bad_action', '操作を選択してください。');

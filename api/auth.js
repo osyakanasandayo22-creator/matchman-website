@@ -1,11 +1,14 @@
 import { body, fail, json, method, sameOrigin, HttpError } from '../lib/http.js';
 import { signIn } from '../lib/unity.js';
 import { setSession } from '../lib/session.js';
+import { accountReady } from '../lib/config.js';
 
 export default async function handler(req, res) {
   try {
     method(req, 'POST');
     sameOrigin(req);
+    if (!accountReady())
+      throw new HttpError(503, 'site_not_configured', 'アカウント機能の公開設定がまだ完了していません。');
     const { action, username, password } = body(req);
     if (action !== 'login' && action !== 'signup')
       throw new HttpError(400, 'bad_action', '操作を選択してください。');
