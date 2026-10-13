@@ -6,7 +6,8 @@ Unityプロジェクトと同じ Unity Authentication のアカウントを使�
 
 - ゲーム紹介、開発ノート、Steamページ準備中の案内
 - Unity Authentication のログインIDとパスワードによる新規登録・ログイン
-- Googleログイン。最初にゲームと同じログインIDでサイトに入り、アカウント画面からGoogleを連携すると、次回から同じプレイヤーIDにGoogleでログイン可能
+- Googleログイン。初回はゲームアカウントを自動作成。既存アカウントへGoogleを追加する場合は、そのアカウントにログインしてから連携
+- ゲーム起動時のサイト認証。ゲームの接続コードをサイトで確認・承認すると、同じUnityアカウントでロビーに入る
 - プレイヤー名の初回設定と変更。3〜16文字の日本語・英字・数字・アンダースコアを使用。NFKC正規化と小文字化した名前で重複を防止
 - 初回設定の後、変更するたびに14日間の待機期間を設定。次に変更できる日時を表示
 - Unity Cloud Save に名前を反映。ゲームのログイン時と約60秒ごとに自分の名前を再取得。フレンド側も公開名を約60秒ごとに再取得
@@ -26,13 +27,17 @@ Unityゲーム → 友人の mc_public_name を読む → フレンド欄の名�
 
 Unity Authentication のユーザー名は**ログインID**です。ゲームの「フレンドコード」は既存の Unity Player Name を利用しているため、このサイトは Player Name を変更しません。画面に表示する**プレイヤー名**は別に管理します。
 
-Google連携はUnity Authenticationの `google.com` プロバイダーを既存プレイヤーにリンクします。GoogleのメールアドレスでUnityアカウントを推測・統合しません。別のプレイヤーIDにすでに紐付くGoogleアカウントを強制的に奪わないよう `forceLink: false` としています。Googleログイン時は `signInOnly: true` を指定し、未連携のGoogleアカウントから別のゲームアカウントを自動作成しません。現行ゲームにはGoogleログイン画面がないため、ゲーム側では従来のログインID・パスワードを使います。
+Google連携はUnity Authenticationの `google.com` プロバイダーを既存プレイヤーにリンクします。GoogleのメールアドレスでUnityアカウントを推測・統合しません。別のプレイヤーIDにすでに紐付くGoogleアカウントを強制的に奪わないよう `forceLink: false` としています。未連携のGoogleアカウントからログインした場合は新しいUnityプレイヤーを作成します。既存のログインIDを使う人は、そのアカウントからGoogleを連携すれば同じプレイヤーIDを保持できます。
+
+ゲームへのログインはUnity Authenticationの **Code Link** を使用します。ゲームが発行した短いコードの接続先をサイトで確認して承認します。認証済みサイトのセッショントークンをブラウザへ公開せず、サーバーからUnityへ承認を送ります。ゲームに保存された正式アカウントのセッションは次回起動に再利用されます。最後のゲームログインから90日が過ぎた場合はゲームから再認証を求めます。サイトのログインCookieは30日です。
+
+新規登録のパスワードは12〜64文字で、記号は不要です。Unity Authenticationが内部的に英大小文字・数字・記号を要求するため、サーバー側で入力パスワードからUnity互換の認証文字列を導出します。入力パスワードも導出文字列もDBには保存しません。既存のゲーム内で作ったアカウントは、従来のパスワードでもログインできます。`lib/password.js` の導出方式を変えると新しい方式で登録したユーザーがログインできなくなるため、移行なしで変更しないでください。
 
 名前の一意性と変更制限は Neon の `player_names` テーブルで原子的に判定します。ブラウザの表示だけで制限していません。Cloud Save への同期に失敗したときは `sync_pending` を残し、次のプロフィール表示で再試行します。ゲームの `mc_profile` 全体をサイトから上書きせず、進行状況を保護します。
 
 初回設定は `changes=0`、以後の変更は `changes` が増えます。初回も設定後14日間は変更できません。同じ名前を再送した場合は変更回数を増やしません。
 
-ゲーム内で作成済みのログインID・パスワードも利用できます。現在の**ゲスト専用アカウントはサイトで直接ログインできません**。ゲスト進行状況を引き継ぐには、Unity Authentication のアカウント連携機能をゲーム内に追加する必要があります。新規登録をすると新しいゲームアカウントになります。
+ゲーム内で作成済みのログインID・パスワードもサイトで利用できます。**ゲスト専用アカウントはゲームへ入れません**。ゲスト進行状況は新規アカウントへ自動移行されません。旧ゲストから正式アカウントへの移行が必要な場合は、旧ビルドとアカウント連携機能で移行する設計を別途用意する必要があります。
 
 以前から存在するゲーム内の名前は、最初にサイトで名前を登録するまでは中央の重複管理に入りません。既存プレイヤーは初回ログイン時に名前を設定してください。重複した既存名は先に登録したアカウントが確保し、後から登録する側は別名を選びます。サイト管理済みのアカウントについては、旧ゲーム内の自由な名前変更を使えないようにしています。
 
@@ -56,7 +61,7 @@ npm run dev
 2. NeonでPostgresプロジェクトを作り、`db/schema.sql` をSQL Editorで実行します。別のデータベースを使う場合も同じテーブルと一意制約が必要です。
 3. `.env.example` を `Website/.env` にコピーし、`DATABASE_URL` とランダムな32文字以上の `SESSION_SECRET` を設定します。`SESSION_SECRET` はサーバー専用で、公開アセットに入れないでください。`.env` は `.gitignore` に登録済みです。
 4. Google CloudでOAuth同意画面を設定し、**Webアプリケーション**用のOAuthクライアントIDを作成します。承認済みJavaScript生成元にローカルの `http://127.0.0.1:3000`（利用できない場合は `http://localhost:3000` に統一）と公開時の `https://<サイトのドメイン>` を登録します。ポップアップのJavaScriptコールバック方式を使用するため、リダイレクトURIやクライアントシークレットはサイト側で使用しません。
-5. Unity DashboardのAuthenticationで **Googleプロバイダー**を有効にし、同じWebクライアントIDを設定します。`GOOGLE_CLIENT_ID` にこのIDを指定します。クライアントIDは公開可能な識別子ですが、秘密鍵・クライアントシークレットをブラウザに渡さないでください。Google設定が空欄ならサイトではGoogleボタンを表示しません。
+5. Unity DashboardのAuthenticationで **Googleプロバイダー**を有効にし、同じWebクライアントIDを設定します。さらに **Code Linkプロバイダー**を追加して有効にします。`GOOGLE_CLIENT_ID` にGoogleのWebクライアントIDを指定します。クライアントIDは公開可能な識別子ですが、秘密鍵・クライアントシークレットをブラウザに渡さないでください。Google設定が空欄ならサイトではGoogleボタンを表示しません。
 6. ローカルで実アカウントを使って登録、名前設定、再ログイン、Unityゲーム内反映、フレンド欄更新を確認します。GoogleについてはログインIDでログイン → Google連携 → ログアウト → Googleログイン → **同じPLAYER ACCOUNT ID**になることを確認します。既存の本番プレイヤーの名前を使った検証は、14日制限が実際に発生するため慎重に行ってください。
 7. このフォルダ単独のリポジトリをVercelへ読み込み、**Root Directoryは既定のリポジトリルート（`.`）** にします。`UNITY_PROJECT_ID`、`UNITY_ENVIRONMENT`、`DATABASE_URL`、`SESSION_SECRET`、`GOOGLE_CLIENT_ID` をEnvironment Variablesに登録します。`public` が静的サイト、`api` がサーバー関数です。公開URLをGoogle Cloudの承認済みJavaScript生成元に追加します。
 8. Steamページが完成したら `public/app.js` の `steamUrl` を実URLに変更し、リンク先を確認します。
@@ -77,11 +82,14 @@ Vercel Hobbyは無料ですが、公式規約では個人の非商用利用に�
 
 サイト本体は独立した `Website` ディレクトリです。Unity側で変更した5ファイルの元版は `DevBackups/WebNameIntegration-20261012` に保存しました。戻す場合はUnityを停止し、この5ファイルを `Assets/Scripts` に戻してからEditorを再コンパイルしてください。既存シーン、Prefab、`mc_profile` の構造は変更していません。
 
+今回のゲームログイン変更の元ファイルは `RevertSnapshots/WebLoginGate_20261013` に保存しました。サイトは独立Gitリポジトリの前コミットに戻せます。Unity側の今回の変更対象は `AccountService.cs`、`CloudProfile.cs`、`PlayerProfile.cs` です。
+
 ## 参考ドキュメント
 
 - [Unity Authentication Username & Password](https://docs.unity.com/en-us/authentication/platform-signin/username-password)
 - [Unity Authentication REST API](https://docs.unity.com/en-us/oas-player-auth-client/1.0.0)
 - [Unity Authentication Google](https://docs.unity.com/en-us/authentication/platform-signin/google)
+- [Unity Authentication Code Link](https://docs.unity.com/en-us/authentication/platform-signin/code-link)
 - [Google Identity Services](https://developers.google.com/identity/gsi/web/guides/display-button)
 - [Google IDトークンの検証](https://developers.google.com/identity/gsi/web/guides/verify-google-id-token)
 - [Unity Cloud Save REST API](https://docs.unity.com/en-us/oas-cloud-save/1.0.0)

@@ -1,5 +1,6 @@
 const $ = id => document.getElementById(id);
-const state = { mode: 'login', csrf: null, profile: null, googleReady: false };
+const gameCode = new URLSearchParams(location.search).get('gameCode') || '';
+const state = { mode: 'login', csrf: null, profile: null, googleReady: false, gameInfoLoaded: false, gameConfirmed: false };
 
 function message(text, success = false) {
   const node = $('account-message');
@@ -27,13 +28,50 @@ function setMode(mode) {
   $('tab-login').setAttribute('aria-selected', String(!signup));
   $('tab-signup').classList.toggle('active', signup);
   $('tab-signup').setAttribute('aria-selected', String(signup));
-  $('auth-intro').textContent = signup ? '新しいアカウントを作成します。登録後、プレイヤー名を設定してください。' : 'ゲームで登録したログインIDとパスワードを入力してください。';
+  $('auth-intro').textContent = signup ? '新しいアカウントを作成します。登録後、プレイヤー名を設定してください。' : '登録済みのログインIDとパスワードを入力してください。';
   $('password').autocomplete = signup ? 'new-password' : 'current-password';
+  $('password').minLength = signup ? 12 : 8;
   $('password-hint').hidden = !signup;
   $('auth-submit').firstChild.textContent = signup ? 'アカウントを作成 ' : 'ログインする ';
-  $('google-login-area').hidden = signup;
   message('');
 }
+
+async function deviceRequest(action) {
+  return api('device', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': state.csrf }, body: JSON.stringify({ action, code: gameCode }) });
+}
+
+async function loadGameLinkInfo() {
+  if (!gameCode || !state.profile || state.gameInfoLoaded || state.gameConfirmed) return;
+  $('game-link-status').textContent = 'ゲームの接続先を確認しています…';
+  try {
+    const info = await deviceRequest('info');
+    const destination = info.identifier ? `接続先: ${info.identifier}。` : '';
+    $('game-link-status').textContent = `${destination}ゲームに表示されたコードを確かめてください。`;
+    $('game-link-confirm').disabled = false;
+    state.gameInfoLoaded = true;
+  } catch {
+    $('game-link-status').textContent = 'コードを確認できませんでした。ゲームに戻って新しいコードを作成してください。';
+  }
+}
+
+if (/^[A-Za-z0-9-]{4,32}$/.test(gameCode)) {
+  $('game-link-panel').hidden = false;
+  $('game-link-code').textContent = gameCode;
+  $('game-link-status').textContent = 'ログインまたは新規作成の後にゲームへ接続できます。';
+}
+
+$('game-link-confirm').addEventListener('click', async () => {
+  if (!state.profile || !state.gameInfoLoaded || state.gameConfirmed) return;
+  $('game-link-confirm').disabled = true;
+  try {
+    await deviceRequest('confirm');
+    state.gameConfirmed = true;
+    $('game-link-status').textContent = '接続を承認しました。ゲームに戻ってください。';
+  } catch (error) {
+    $('game-link-confirm').disabled = false;
+    $('game-link-status').textContent = error.message;
+  }
+});
 
 function dateLabel(iso) {
   const date = new Date(iso);
@@ -72,6 +110,7 @@ function renderProfile(profile) {
   $('google-link-status').textContent = profile.googleLinked === true ? '連携済みです。次回からGoogleで同じゲームアカウントにログインできます。' :
     !state.googleReady ? 'Googleログインの公開設定を準備中です。' :
     'このゲームアカウントにGoogleを連携すると、次回からGoogleでもログインできます。';
+  loadGameLinkInfo();
 }
 
 async function handleGoogleCredential(response) {
@@ -84,7 +123,7 @@ async function handleGoogleCredential(response) {
       body: JSON.stringify({ mode, credential: response.credential })
     });
     renderProfile(await api('profile'));
-    message(mode === 'link' ? 'Googleアカウントを連携しました。' : 'Googleでログインしました。', true);
+    message(mode === 'link' ? 'Googleアカウントを連携しました。' : 'Googleでログインしました。初めての方はプレイヤー名を設定してください。', true);
   } catch (error) { message(error.message); }
 }
 

@@ -19,6 +19,7 @@ const handlers = {
   '/api/auth': () => import('./api/auth.js'),
   '/api/config': () => import('./api/config.js'),
   '/api/google': () => import('./api/google.js'),
+  '/api/device': () => import('./api/device.js'),
   '/api/profile': () => import('./api/profile.js'),
   '/api/name': () => import('./api/name.js'),
   '/api/logout': () => import('./api/logout.js')
