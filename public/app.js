@@ -86,11 +86,15 @@ function renderProfile(profile) {
   $('profile-view').hidden = false;
   $('profile-name').textContent = profile.displayName || '名前未設定';
   $('profile-id').textContent = `ACCOUNT ID  ${profile.playerId}`;
-  $('profile-tier').textContent = profile.tier || 'E';
-  $('tier-icon').src = `/assets/tier-${String(profile.tier || 'E').toLowerCase()}.png`;
-  $('tier-icon').alt = `ティア${profile.tier || 'E'}`;
-  $('profile-level').textContent = Number(profile.level || 1).toLocaleString('ja-JP');
-  $('profile-diamonds').textContent = Number(profile.diamonds || 0).toLocaleString('ja-JP');
+  $('profile-tier').textContent = profile.tier ?? '—';
+  $('tier-icon').hidden = !profile.tier;
+  if (profile.tier) {
+    $('tier-icon').src = `/assets/tier-${profile.tier.toLowerCase()}.png`;
+    $('tier-icon').alt = `ティア${profile.tier}`;
+  }
+  $('profile-level').textContent = profile.level == null ? '—' : Number(profile.level).toLocaleString('ja-JP');
+  $('profile-diamonds').textContent = profile.diamonds == null ? '—' : Number(profile.diamonds).toLocaleString('ja-JP');
+  $('profile-sync-status').hidden = profile.level != null;
 
   const firstSet = Boolean(profile.firstSet);
   const available = !firstSet || new Date(profile.nextChangeAt).getTime() <= Date.now();
@@ -209,20 +213,6 @@ $('logout').addEventListener('click', async () => {
     message('ログアウトしました。', true);
   } catch (error) { message(error.message); }
 });
-
-const steamUrl = '';
-if (steamUrl) {
-  for (const id of ['steam-hero', 'steam-footer']) {
-    const button = $(id);
-    const link = document.createElement('a');
-    link.href = steamUrl;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-    link.className = button.className;
-    link.textContent = 'Steamで見る ↗';
-    button.replaceWith(link);
-  }
-}
 
 loadProfile();
 configureGoogle();

@@ -13,9 +13,9 @@
   <header class="site-header">
     <a class="brand" href="#top" aria-label="MATCHMAN トップ"><img src="/assets/logo.png" alt="MATCHMAN"></a>
     <nav aria-label="メインナビゲーション">
-      <a href="#game">ゲーム</a><a href="#news">ニュース</a><a href="#account">アカウント</a>
+      <a href="#game">ゲーム</a><a href="#news">ニュース</a><a href="/account.html">アカウント</a>
     </nav>
-    <a class="header-cta" href="#account">マイアカウント <span aria-hidden="true">↗</span></a>
+    <a class="header-cta" href="/account.html">マイアカウント <span aria-hidden="true">↗</span></a>
   </header>
 
   <main id="top">
@@ -57,22 +57,11 @@
       <article class="news-item"><span class="news-type">お知らせ</span><div><h3>Steamページは準備中です</h3><p>ストアページ公開後に、このサイトから移動できるようになります。</p></div><span class="news-arrow" aria-hidden="true">↗</span></article>
     </div></section>
 
-    <section class="account-band" id="account" aria-labelledby="account-title"><div class="account-head"><div><p class="eyebrow light"><span class="line"></span> YOUR ACCOUNT</p><h2 id="account-title">自分の名前で、<br>戦場へ。</h2></div><p>ゲームと共通のアカウントでログインし、プレイヤー名を設定できます。設定した名前はゲームのプロフィールに反映されます。</p></div>
-      <div class="account-panel">
-        <div id="game-link-panel" class="game-link-panel" hidden><span class="profile-label">GAME CONNECTION</span><h3>ゲームをこのアカウントに接続</h3><p>ゲーム画面のコードと一致することを確認してから接続してください。</p><strong id="game-link-code" class="game-link-code"></strong><p id="game-link-status" role="status"></p><button id="game-link-confirm" class="button button-red" type="button" disabled>ゲームへ接続する</button></div>
-        <div id="auth-view"><div class="tab-list" role="tablist" aria-label="アカウント操作"><button id="tab-login" class="tab active" role="tab" aria-selected="true" type="button">ログイン</button><button id="tab-signup" class="tab" role="tab" aria-selected="false" type="button">新規作成</button></div>
-          <form id="auth-form" autocomplete="on"><p class="form-intro" id="auth-intro">登録済みのログインIDとパスワードを入力してください。</p><label for="username">ログインID <span class="field-hint">3〜20文字</span></label><input id="username" name="username" type="text" autocomplete="username" minlength="3" maxlength="20" pattern="[A-Za-z0-9.@_-]+" required placeholder="your_account_id"><label for="password">パスワード</label><input id="password" name="password" type="password" autocomplete="current-password" minlength="8" maxlength="64" required placeholder="パスワード"><p class="form-hint" id="password-hint" hidden>12〜64文字。記号は不要です。覚えやすい長いフレーズを推奨します。</p><button class="button button-red form-submit" id="auth-submit" type="submit">ログインする <span aria-hidden="true">↗</span></button></form>
-          <div id="google-login-area" class="google-area"><div class="auth-divider"><span>または</span></div><div id="google-login-button" class="google-button"><button class="small-button" type="button" disabled>Googleログイン 準備中</button></div><p id="google-login-note" class="form-hint">Googleで初めてログインすると、ゲームアカウントも作成されます。</p></div>
-          <p class="form-foot">以前ゲーム内で作成したログインIDも利用できます。初めての方は新規作成かGoogleで続けてください。</p>
-        </div>
-        <div id="profile-view" hidden><div class="profile-top"><div><span class="profile-label">PLAYER ACCOUNT</span><h3 id="profile-name">プレイヤー名</h3><p id="profile-id" class="profile-id"></p></div><button id="logout" class="small-button" type="button">ログアウト</button></div><div class="stats"><div><img id="tier-icon" src="/assets/tier-e.png" alt="ティアアイコン"><span>ティア</span><strong id="profile-tier">E</strong></div><div><span>レベル</span><strong id="profile-level">1</strong></div><div><span>ダイヤ</span><strong id="profile-diamonds">0</strong></div></div><div class="name-box"><h4 id="name-heading">プレイヤー名を設定</h4><p id="name-status">初回設定後、名前を変更できるのは14日ごとです。</p><form id="name-form"><label for="display-name">新しいプレイヤー名 <span class="field-hint">3〜16文字</span></label><div class="name-row"><input id="display-name" name="name" type="text" minlength="3" maxlength="16" required autocomplete="off" placeholder="プレイヤー名"><button class="button button-red" id="name-submit" type="submit">設定する</button></div><p class="form-hint">日本語・英字・数字・アンダースコアが使えます。名前の重複はできません。</p></form><p class="sync-note" id="sync-note" hidden></p></div><div id="google-link-area" class="google-link-area"><h4>Googleアカウント</h4><p id="google-link-status">Googleと連携すると、次回から同じプレイヤーIDにGoogleでログインできます。</p><div id="google-link-button" class="google-button"></div></div></div>
-        <p id="account-message" class="account-message" role="status" aria-live="polite" hidden></p>
-      </div>
-    </section>
+    <section class="account-teaser" aria-labelledby="account-teaser-title"><div><p class="eyebrow light"><span class="line"></span> YOUR ACCOUNT</p><h2 id="account-teaser-title">戦績も名前も、<br>ひとつの場所に。</h2><p>ゲームと共通のアカウントでログイン。レベルやティアの確認、プレイヤー名の設定ができます。</p></div><a class="button button-red" href="/account.html">マイアカウントへ <span aria-hidden="true">↗</span></a></section>
 
     <section class="steam-band"><div><p class="eyebrow">COMING TO STEAM</p><h2>次の戦場は、<br>もうすぐ。</h2><p>Steamストアページの公開を準備中です。</p></div><button class="button button-dark" type="button" id="steam-footer" disabled>Steamページ 準備中 <span aria-hidden="true">↗</span></button></section>
   </main>
   <footer><a href="#top"><img src="/assets/logo.png" alt="MATCHMAN"></a><p>© MATCHMAN. 開発中のゲームです。掲載内容は変更される場合があります。</p><a href="#top">BACK TO TOP ↑</a></footer>
-  <script type="module" src="/app.js"></script>
+  <script type="module" src="/home.js"></script>
 </body>
 </html>

@@ -13,7 +13,11 @@ Unityプロジェクトと同じ Unity Authentication のアカウントを使�
 - Unity Cloud Save に名前を反映。ゲームのログイン時と約60秒ごとに自分の名前を再取得。フレンド側も公開名を約60秒ごとに再取得
 - レベル、ティア、ダイヤ数を既存の `mc_profile` から読み取り表示
 
-Steamの実際のストアURLが決まるまでは、ボタンを押せない「準備中」として表示します。公開後は `public/app.js` の `steamUrl` に **MATCHMAN自身のSteamストアURL** を指定します。
+トップページは `/`、ログイン・新規作成・プロフィール・名前変更は `/account.html` です。従来の `/#account` と、旧ゲームビルドが開く `/?gameCode=...#account` はアカウントページに転送します。新しいゲームビルドはアカウントページを直接開きます。
+
+Steamの実際のストアURLが決まるまでは、ボタンを押せない「準備中」として表示します。公開後は `public/home.js` の `steamUrl` に **MATCHMAN自身のSteamストアURL** を指定します。
+
+サイトのレベル・ティア・ダイヤ数は、Unity Cloud Save の Default データを `GET /players/{playerId}/items?keys=mc_profile` で取得して表示します。`mc_profile` がまだ存在しないアカウントでは「—」を表示し、未取得をレベル1・Eティアと誤表示しません。
 
 ## アカウントと名前の仕組み
 
@@ -64,7 +68,7 @@ npm run dev
 5. Unity DashboardのAuthenticationで **Googleプロバイダー**を有効にし、同じWebクライアントIDを設定します。さらに **Code Linkプロバイダー**を追加して有効にします。`GOOGLE_CLIENT_ID` にGoogleのWebクライアントIDを指定します。クライアントIDは公開可能な識別子ですが、秘密鍵・クライアントシークレットをブラウザに渡さないでください。Google設定が空欄ならサイトではGoogleボタンを表示しません。
 6. ローカルで実アカウントを使って登録、名前設定、再ログイン、Unityゲーム内反映、フレンド欄更新を確認します。GoogleについてはログインIDでログイン → Google連携 → ログアウト → Googleログイン → **同じPLAYER ACCOUNT ID**になることを確認します。既存の本番プレイヤーの名前を使った検証は、14日制限が実際に発生するため慎重に行ってください。
 7. このフォルダ単独のリポジトリをVercelへ読み込み、**Root Directoryは既定のリポジトリルート（`.`）** にします。`UNITY_PROJECT_ID`、`UNITY_ENVIRONMENT`、`DATABASE_URL`、`SESSION_SECRET`、`GOOGLE_CLIENT_ID` をEnvironment Variablesに登録します。`public` が静的サイト、`api` がサーバー関数です。公開URLをGoogle Cloudの承認済みJavaScript生成元に追加します。
-8. Steamページが完成したら `public/app.js` の `steamUrl` を実URLに変更し、リンク先を確認します。
+8. Steamページが完成したら `public/home.js` の `steamUrl` を実URLに変更し、リンク先を確認します。
 
 Vercel Hobbyは無料ですが、公式規約では個人の非商用利用に制限されています。将来ダイヤ販売などの商用運用を始める際は、公開前にプランと規約を再確認してください。Unity Authenticationは現行ドキュメントで利用料金なしとされています。Neonも無料枠がありますが、容量・利用枠は公開前に現行プランを確認してください。
 
