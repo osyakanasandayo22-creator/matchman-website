@@ -5,12 +5,14 @@ Googleログインは、サイトの公開URLが確定してから設定しま�
 ## 1. Google CloudでクライアントIDを作成
 
 1. [Google Cloud Console](https://console.cloud.google.com/) に、運営に使用するGoogleアカウントでログインします。
-2. 上部のプロジェクト選択から`MATCHMAN`用のプロジェクトを新規作成するか、既存の専用プロジェクトを選びます。
+2. 上部のプロジェクト選択から、再利用候補の既存プロジェクト **ShortCut**（プロジェクトID `shortcut-485012`）を選びます。2026年10月13日のリソース一覧では最終アクセスが2026年1月21日で、Firebaseラベルがない候補でした。OAuthクライアントと有効なAPIの一覧はGoogle Cloud Console側の読み込みエラーで未確認です。既存設定を確認してからMATCHMAN用に設定してください。
 3. 左メニューの **Google Auth Platform → Branding** でアプリ名`MATCHMAN`、サポート用メールアドレス、デベロッパー連絡先を設定します。一般向けに公開する場合は、サイトと一致したホームページ・プライバシーポリシーのURLなど、画面が要求する情報も設定します。
 4. **Audience** では、一般プレイヤー向けなら`External`を選びます。`Testing`の間は登録したテストユーザーだけが利用できます。公開するときはGoogle側の公開状態と要求される審査を確認します。
 5. **Clients → Create client → Application type: Web application** を選びます。名前は例えば`MATCHMAN Website`にします。
 6. **Authorized JavaScript origins** に、実際の公開URLのオリジン（例: `https://matchman-website.vercel.app`）を登録します。パスや末尾の`/`は付けません。ローカルでも試す場合は`http://localhost:3000`も追加します。VercelのプレビューURLは毎回変わるため、まず固定のProduction URLを登録します。
 7. このサイトはJavaScriptコールバック方式なので、**Authorized redirect URIs は空欄**で構いません。**Create**を押し、表示された`...apps.googleusercontent.com`形式の**Client ID**を控えます。Client Secretはこのサイトでは使いません。
+
+公開用のサポートメールアドレスは未準備です。Googleのブランディング画面に運営者個人のGmailを公開用として登録せず、専用アドレスを用意してから設定してください。
 
 ## 2. 同じIDをUnityとVercelに設定
 
